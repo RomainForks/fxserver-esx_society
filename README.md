@@ -3,24 +3,19 @@
 Society management for ESX. Adds employee management (hire, fire, promote / demote, change salary), society bank accounts and money washing. It's crucial that this script gets started before all resources that utilize societies do, or else many things will go wrong.
 
 ## Requirements
-- [cron](https://github.com/ESX-Org/cron)
-- [esx_addonaccount](https://github.com/ESX-Org/esx_addonaccount)
+- [cron](https://github.com/esx-legacy/cron)
+- [esx_addonaccount](https://github.com/esx-legacy/esx_addonaccount)
 
 ## Download & Installation
-
-### Using [fvm](https://github.com/qlaffont/fvm-installer)
-```
-fvm install --save --folder=esx esx-org/esx_society
-```
 
 ### Using Git
 ```
 cd resources
-git clone https://github.com/ESX-Org/esx_society [esx]/esx_society
+git clone https://github.com/esx-legacy/esx_society [esx]/esx_society
 ```
 
 ### Manually
-- Download https://github.com/ESX-Org/esx_society/archive/master.zip
+- Download https://github.com/esx-legacy/esx_society/archive/master.zip
 - Put it in the `[esx]` directory
 
 ## Installation
@@ -28,7 +23,7 @@ git clone https://github.com/ESX-Org/esx_society [esx]/esx_society
 - Add this in your `server.cfg`:
 
 ```
-start esx_society
+ensure esx_society
 ```
 
 ## Explanation
@@ -53,7 +48,7 @@ end, {wash = false}) -- set custom options, e.g disable washing
 ### License
 esx_society - societies for ESX
 
-Copyright (C) 2015-2020 Jérémie N'gadi
+Copyright (C) 2015-2022 Jérémie N'gadi
 
 This program Is free software: you can redistribute it And/Or modify it under the terms Of the GNU General Public License As published by the Free Software Foundation, either version 3 Of the License, Or (at your option) any later version.
 

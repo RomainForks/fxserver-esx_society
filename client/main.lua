@@ -17,9 +17,9 @@ Citizen.CreateThread(function()
 	RefreshBussHUD()
 end)
 
-RegisterNetEvent('esx:setJob')
-AddEventHandler('esx:setJob', function(job)
+RegisterNetEvent('esx:setJob', function(job)
 	ESX.PlayerData.job = job
+
 	RefreshBussHUD()
 end)
 
@@ -35,8 +35,7 @@ function RefreshBussHUD()
 	end
 end
 
-RegisterNetEvent('esx_addonaccount:setMoney')
-AddEventHandler('esx_addonaccount:setMoney', function(society, money)
+RegisterNetEvent('esx_addonaccount:setMoney', function(society, money)
 	if ESX.PlayerData.job and ESX.PlayerData.job.grade_name == 'boss' and 'society_' .. ESX.PlayerData.job.name == society then
 		UpdateSocietyMoneyHUDElement(money)
 	end
@@ -114,7 +113,7 @@ function OpenBossMenu(society, close, options)
 
 			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'boss_actions_' .. society, {
 				title    = _U('boss_menu'),
-				align    = 'top-left',
+				align    = 'right',
 				elements = elements
 			}, function(data, menu)
 				if data.current.value == 'withdraw_society_money' then
@@ -179,7 +178,7 @@ end
 function OpenManageEmployeesMenu(society)
 	ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'manage_employees_' .. society, {
 		title    = _U('employee_management'),
-		align    = 'top-left',
+		align    = 'right',
 		elements = {
 			{label = _U('employee_list'), value = 'employee_list'},
 			{label = _U('recruit'), value = 'recruit'}
@@ -252,12 +251,12 @@ function OpenRecruitMenu(society)
 
 		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'recruit_' .. society, {
 			title    = _U('recruiting'),
-			align    = 'top-left',
+			align    = 'right',
 			elements = elements
 		}, function(data, menu)
 			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'recruit_confirm_' .. society, {
 				title    = _U('do_you_want_to_recruit', data.current.name),
-				align    = 'top-left',
+				align    = 'right',
 				elements = {
 					{label = _U('no'), value = 'no'},
 					{label = _U('yes'), value = 'yes'}
@@ -296,7 +295,7 @@ function OpenPromoteMenu(society, employee)
 
 		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'promote_employee_' .. society, {
 			title    = _U('promote_employee', employee.name),
-			align    = 'top-left',
+			align    = 'right',
 			elements = elements
 		}, function(data, menu)
 			menu.close()
@@ -327,7 +326,7 @@ function OpenManageGradesMenu(society)
 
 		ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'manage_grades_' .. society, {
 			title    = _U('salary_management'),
-			align    = 'top-left',
+			align    = 'right',
 			elements = elements
 		}, function(data, menu)
 			ESX.UI.Menu.Open('dialog', GetCurrentResourceName(), 'manage_grades_amount_' .. society, {

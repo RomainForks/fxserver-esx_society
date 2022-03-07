@@ -13,14 +13,14 @@ function GetSociety(name)
 end
 
 MySQL.ready(function()
-	local result = MySQL.Sync.fetchAll('SELECT * FROM jobs', {})
+	local result = MySQL.query.await('SELECT * FROM jobs', {})
 
 	for i=1, #result, 1 do
 		Jobs[result[i].name] = result[i]
 		Jobs[result[i].name].grades = {}
 	end
 
-	local result2 = MySQL.Sync.fetchAll('SELECT * FROM job_grades', {})
+	local result2 = MySQL.query.await('SELECT * FROM job_grades', {})
 
 	for i=1, #result2, 1 do
 		Jobs[result2[i].job_name].grades[tostring(result2[i].grade)] = result2[i]
@@ -59,8 +59,7 @@ AddEventHandler('esx_society:getSociety', function(name, cb)
 	cb(GetSociety(name))
 end)
 
-RegisterServerEvent('esx_society:withdrawMoney')
-AddEventHandler('esx_society:withdrawMoney', function(societyName, amount)
+RegisterNetEvent('esx_society:withdrawMoney', function(societyName, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local society = GetSociety(societyName)
 	amount = ESX.Math.Round(tonumber(amount))
@@ -80,8 +79,7 @@ AddEventHandler('esx_society:withdrawMoney', function(societyName, amount)
 	end
 end)
 
-RegisterServerEvent('esx_society:depositMoney')
-AddEventHandler('esx_society:depositMoney', function(societyName, amount)
+RegisterNetEvent('esx_society:depositMoney', function(societyName, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local society = GetSociety(societyName)
 	amount = ESX.Math.Round(tonumber(amount))
@@ -101,8 +99,7 @@ AddEventHandler('esx_society:depositMoney', function(societyName, amount)
 	end
 end)
 
-RegisterServerEvent('esx_society:washMoney')
-AddEventHandler('esx_society:washMoney', function(society, amount)
+RegisterNetEvent('esx_society:washMoney', function(society, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local account = xPlayer.getAccount('black_money')
 	amount = ESX.Math.Round(tonumber(amount))
@@ -111,7 +108,7 @@ AddEventHandler('esx_society:washMoney', function(society, amount)
 		if amount and amount > 0 and account.money >= amount then
 			xPlayer.removeAccountMoney('black_money', amount)
 
-			MySQL.Async.execute('INSERT INTO society_moneywash (identifier, society, amount) VALUES (@identifier, @society, @amount)', {
+			MySQL.insert('INSERT INTO society_moneywash (identifier, society, amount) VALUES (@identifier, @society, @amount)', {
 				['@identifier'] = xPlayer.identifier,
 				['@society'] = society,
 				['@amount'] = amount
@@ -126,8 +123,7 @@ AddEventHandler('esx_society:washMoney', function(society, amount)
 	end
 end)
 
-RegisterServerEvent('esx_society:putVehicleInGarage')
-AddEventHandler('esx_society:putVehicleInGarage', function(societyName, vehicle)
+RegisterNetEvent('esx_society:putVehicleInGarage', function(societyName, vehicle)
 	local society = GetSociety(societyName)
 
 	TriggerEvent('esx_datastore:getSharedDataStore', society.datastore, function(store)
@@ -137,8 +133,7 @@ AddEventHandler('esx_society:putVehicleInGarage', function(societyName, vehicle)
 	end)
 end)
 
-RegisterServerEvent('esx_society:removeVehicleFromGarage')
-AddEventHandler('esx_society:removeVehicleFromGarage', function(societyName, vehicle)
+RegisterNetEvent('esx_society:removeVehicleFromGarage', function(societyName, vehicle)
 	local society = GetSociety(societyName)
 
 	TriggerEvent('esx_datastore:getSharedDataStore', society.datastore, function(store)
@@ -170,7 +165,7 @@ end)
 ESX.RegisterServerCallback('esx_society:getEmployees', function(source, cb, society)
 	if Config.EnableESXIdentity then
 
-		MySQL.Async.fetchAll('SELECT firstname, lastname, identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
+		MySQL.query('SELECT firstname, lastname, identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
 			['@job'] = society
 		}, function (results)
 			local employees = {}
@@ -192,7 +187,7 @@ ESX.RegisterServerCallback('esx_society:getEmployees', function(source, cb, soci
 			cb(employees)
 		end)
 	else
-		MySQL.Async.fetchAll('SELECT identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
+		MySQL.query('SELECT identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
 			['@job'] = society
 		}, function (result)
 			local employees = {}
@@ -253,7 +248,7 @@ ESX.RegisterServerCallback('esx_society:setJob', function(source, cb, identifier
 
 			cb()
 		else
-			MySQL.Async.execute('UPDATE users SET job = @job, job_grade = @job_grade WHERE identifier = @identifier', {
+			MySQL.update('UPDATE users SET job = @job, job_grade = @job_grade WHERE identifier = @identifier', {
 				['@job']        = job,
 				['@job_grade']  = grade,
 				['@identifier'] = identifier
@@ -272,7 +267,7 @@ ESX.RegisterServerCallback('esx_society:setJobSalary', function(source, cb, job,
 
 	if xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
 		if salary <= Config.MaxSalary then
-			MySQL.Async.execute('UPDATE job_grades SET salary = @salary WHERE job_name = @job_name AND grade = @grade', {
+			MySQL.update('UPDATE job_grades SET salary = @salary WHERE job_name = @job_name AND grade = @grade', {
 				['@salary']   = salary,
 				['@job_name'] = job,
 				['@grade']    = grade
@@ -342,7 +337,7 @@ function isPlayerBoss(playerId, job)
 end
 
 function WashMoneyCRON(d, h, m)
-	MySQL.Async.fetchAll('SELECT * FROM society_moneywash', {}, function(result)
+	MySQL.query('SELECT * FROM society_moneywash', {}, function(result)
 		for i=1, #result, 1 do
 			local society = GetSociety(result[i].society)
 			local xPlayer = ESX.GetPlayerFromIdentifier(result[i].identifier)
@@ -357,7 +352,7 @@ function WashMoneyCRON(d, h, m)
 				xPlayer.showNotification(_U('you_have_laundered', ESX.Math.GroupDigits(result[i].amount)))
 			end
 
-			MySQL.Async.execute('DELETE FROM society_moneywash WHERE id = @id', {
+			MySQL.query('DELETE FROM society_moneywash WHERE id = @id', {
 				['@id'] = result[i].id
 			})
 		end
