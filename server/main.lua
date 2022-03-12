@@ -1,11 +1,13 @@
-ESX = nil
 local Jobs = {}
 local RegisteredSocieties = {}
+ESX = nil
 
-TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+TriggerEvent('esx:getSharedObject', function(obj)
+	ESX = obj
+end)
 
 function GetSociety(name)
-	for i=1, #RegisteredSocieties, 1 do
+	for i = 1, #RegisteredSocieties, 1 do
 		if RegisteredSocieties[i].name == name then
 			return RegisteredSocieties[i]
 		end
@@ -15,21 +17,20 @@ end
 MySQL.ready(function()
 	local result = MySQL.query.await('SELECT * FROM jobs', {})
 
-	for i=1, #result, 1 do
+	for i = 1, #result, 1 do
 		Jobs[result[i].name] = result[i]
 		Jobs[result[i].name].grades = {}
 	end
 
 	local result2 = MySQL.query.await('SELECT * FROM job_grades', {})
 
-	for i=1, #result2, 1 do
+	for i = 1, #result2, 1 do
 		Jobs[result2[i].job_name].grades[tostring(result2[i].grade)] = result2[i]
 	end
 end)
 
 AddEventHandler('esx_society:registerSociety', function(name, label, account, datastore, inventory, data)
 	local found = false
-
 	local society = {
 		name = name,
 		label = label,
@@ -39,7 +40,7 @@ AddEventHandler('esx_society:registerSociety', function(name, label, account, da
 		data = data
 	}
 
-	for i=1, #RegisteredSocieties, 1 do
+	for i = 1, #RegisteredSocieties, 1 do
 		if RegisteredSocieties[i].name == name then
 			found, RegisteredSocieties[i] = true, society
 			break
@@ -62,6 +63,7 @@ end)
 RegisterNetEvent('esx_society:withdrawMoney', function(societyName, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local society = GetSociety(societyName)
+
 	amount = ESX.Math.Round(tonumber(amount))
 
 	if xPlayer.job.name == society.name then
@@ -82,6 +84,7 @@ end)
 RegisterNetEvent('esx_society:depositMoney', function(societyName, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local society = GetSociety(societyName)
+
 	amount = ESX.Math.Round(tonumber(amount))
 
 	if xPlayer.job.name == society.name then
@@ -102,6 +105,7 @@ end)
 RegisterNetEvent('esx_society:washMoney', function(society, amount)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local account = xPlayer.getAccount('black_money')
+
 	amount = ESX.Math.Round(tonumber(amount))
 
 	if xPlayer.job.name == society then
@@ -128,7 +132,9 @@ RegisterNetEvent('esx_society:putVehicleInGarage', function(societyName, vehicle
 
 	TriggerEvent('esx_datastore:getSharedDataStore', society.datastore, function(store)
 		local garage = store.get('garage') or {}
+
 		table.insert(garage, vehicle)
+
 		store.set('garage', garage)
 	end)
 end)
@@ -139,7 +145,7 @@ RegisterNetEvent('esx_society:removeVehicleFromGarage', function(societyName, ve
 	TriggerEvent('esx_datastore:getSharedDataStore', society.datastore, function(store)
 		local garage = store.get('garage') or {}
 
-		for i=1, #garage, 1 do
+		for i = 1, #garage, 1 do
 			if garage[i].plate == vehicle.plate then
 				table.remove(garage, i)
 				break
@@ -164,21 +170,20 @@ end)
 
 ESX.RegisterServerCallback('esx_society:getEmployees', function(source, cb, society)
 	if Config.EnableESXIdentity then
-
 		MySQL.query('SELECT firstname, lastname, identifier, job, job_grade FROM users WHERE job = @job ORDER BY job_grade DESC', {
 			['@job'] = society
 		}, function (results)
 			local employees = {}
 
-			for i=1, #results, 1 do
+			for i = 1, #results, 1 do
 				table.insert(employees, {
-					name       = results[i].firstname .. ' ' .. results[i].lastname,
+					name = results[i].firstname .. ' ' .. results[i].lastname,
 					identifier = results[i].identifier,
 					job = {
-						name        = results[i].job,
-						label       = Jobs[results[i].job].label,
-						grade       = results[i].job_grade,
-						grade_name  = Jobs[results[i].job].grades[tostring(results[i].job_grade)].name,
+						name = results[i].job,
+						label = Jobs[results[i].job].label,
+						grade = results[i].job_grade,
+						grade_name = Jobs[results[i].job].grades[tostring(results[i].job_grade)].name,
 						grade_label = Jobs[results[i].job].grades[tostring(results[i].job_grade)].label
 					}
 				})
@@ -192,15 +197,15 @@ ESX.RegisterServerCallback('esx_society:getEmployees', function(source, cb, soci
 		}, function (result)
 			local employees = {}
 
-			for i=1, #result, 1 do
+			for i = 1, #result, 1 do
 				table.insert(employees, {
-					name       = GetPlayerName(source),
+					name = GetPlayerName(source),
 					identifier = result[i].identifier,
 					job = {
-						name        = result[i].job,
-						label       = Jobs[result[i].job].label,
-						grade       = result[i].job_grade,
-						grade_name  = Jobs[result[i].job].grades[tostring(result[i].job_grade)].name,
+						name = result[i].job,
+						label = Jobs[result[i].job].label,
+						grade = result[i].job_grade,
+						grade_name = Jobs[result[i].job].grades[tostring(result[i].job_grade)].name,
 						grade_label = Jobs[result[i].job].grades[tostring(result[i].job_grade)].label
 					}
 				})
@@ -215,7 +220,7 @@ ESX.RegisterServerCallback('esx_society:getJob', function(source, cb, society)
 	local job = json.decode(json.encode(Jobs[society]))
 	local grades = {}
 
-	for k,v in pairs(job.grades) do
+	for k, v in pairs(job.grades) do
 		table.insert(grades, v)
 	end
 
@@ -249,8 +254,8 @@ ESX.RegisterServerCallback('esx_society:setJob', function(source, cb, identifier
 			cb()
 		else
 			MySQL.update('UPDATE users SET job = @job, job_grade = @job_grade WHERE identifier = @identifier', {
-				['@job']        = job,
-				['@job_grade']  = grade,
+				['@job'] = job,
+				['@job_grade'] = grade,
 				['@identifier'] = identifier
 			}, function(rowsChanged)
 				cb()
@@ -268,14 +273,15 @@ ESX.RegisterServerCallback('esx_society:setJobSalary', function(source, cb, job,
 	if xPlayer.job.name == job and xPlayer.job.grade_name == 'boss' then
 		if salary <= Config.MaxSalary then
 			MySQL.update('UPDATE job_grades SET salary = @salary WHERE job_name = @job_name AND grade = @grade', {
-				['@salary']   = salary,
+				['@salary'] = salary,
 				['@job_name'] = job,
-				['@grade']    = grade
+				['@grade'] = grade
 			}, function(rowsChanged)
 				Jobs[job].grades[tostring(grade)].salary = salary
+
 				local xPlayers = ESX.GetPlayers()
 
-				for i=1, #xPlayers, 1 do
+				for i = 1, #xPlayers, 1 do
 					local xTarget = ESX.GetPlayerFromId(xPlayers[i])
 
 					if xTarget.job.name == job and xTarget.job.grade == grade then
@@ -299,8 +305,9 @@ ESX.RegisterServerCallback('esx_society:getOnlinePlayers', function(source, cb)
 	local xPlayers = ESX.GetPlayers()
 	local players = {}
 
-	for i=1, #xPlayers, 1 do
+	for i = 1, #xPlayers, 1 do
 		local xPlayer = ESX.GetPlayerFromId(xPlayers[i])
+
 		table.insert(players, {
 			source = xPlayer.source,
 			identifier = xPlayer.identifier,
@@ -317,6 +324,7 @@ ESX.RegisterServerCallback('esx_society:getVehiclesInGarage', function(source, c
 
 	TriggerEvent('esx_datastore:getSharedDataStore', society.datastore, function(store)
 		local garage = store.get('garage') or {}
+
 		cb(garage)
 	end)
 end)
@@ -338,7 +346,7 @@ end
 
 function WashMoneyCRON(d, h, m)
 	MySQL.query('SELECT * FROM society_moneywash', {}, function(result)
-		for i=1, #result, 1 do
+		for i = 1, #result, 1 do
 			local society = GetSociety(result[i].society)
 			local xPlayer = ESX.GetPlayerFromIdentifier(result[i].identifier)
 
